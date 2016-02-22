@@ -7,27 +7,24 @@ import spark.template.mustache.MustacheTemplateEngine;
 import java.util.HashMap;
 
 public class Main {
-
-    static HashMap<String, User> users = new HashMap();
-
+    static User user;
     public static void main(String[] args) {
 	// write your code here
-        User user = new User();
         Spark.init();
         Spark.get(
                 "/",
                 ((request, response) -> {
                     HashMap m = new HashMap();
-                    if (users.get(user.name) == null) {
+                    if (user == null) {
                         return new ModelAndView(m, "index.html");
                     }
                     else {
-                        m.put("name", users.get(user.name).name);
-                        if (users.get(user.name).messages.isEmpty()) {
+                        m.put("name", user.name);
+                        if (user.messages.isEmpty()) {
                             return new ModelAndView(m, "messages.html");
                         }
                         else {
-                            m.put("posts", users.get(user.name).messages);
+                            m.put("posts", user.messages);
                             return new ModelAndView(m, "messages.html");
                         }
                     }
@@ -38,10 +35,7 @@ public class Main {
                 "/index",
                 ((request, response) -> {
                     String name = request.queryParams("createUser");
-                    String password = request.queryParams("createPass");
-                    user.name = name;
-                    user.password = password;
-                    users.put(user.name, user);
+                    user = new User(name);
                     response.redirect("/");
                     return "";
                 })

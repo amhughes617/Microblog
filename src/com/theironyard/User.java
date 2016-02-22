@@ -7,15 +7,13 @@ import java.util.ArrayList;
  */
 public class User {
     String name;
-    String password;
     ArrayList<com.theironyard.Message> messages;
 
     public User() {
     }
 
-    public User(String name, String password) {
+    public User(String name) {
         this.name = name;
-        this.password = password;
         this.messages = new ArrayList<>();
     }
 }
