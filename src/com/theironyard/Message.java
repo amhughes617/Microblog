@@ -11,5 +11,4 @@ public class Message {
         this.index = index;
         this.message = message;
     }
-
 }

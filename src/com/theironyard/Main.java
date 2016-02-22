@@ -10,6 +10,7 @@ public class Main {
 
     static HashMap<String, User> users = new HashMap<>();
     static User user;
+
     public static void main(String[] args) {
 	// write your code here
 
@@ -23,13 +24,10 @@ public class Main {
                     }
                     else {
                         m.put("name", users.get(user.name).name);
-                        if (users.get(user.name).messages.isEmpty()) {
-                            return new ModelAndView(m, "messages.html");
-                        }
-                        else {
+                        if (!users.get(user.name).messages.isEmpty()) {
                             m.put("posts", users.get(user.name).messages);
-                            return new ModelAndView(m, "messages.html");
                         }
+                        return new ModelAndView(m, "messages.html");
                     }
                 }),
                 new MustacheTemplateEngine()
