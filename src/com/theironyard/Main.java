@@ -9,7 +9,7 @@ import java.util.HashMap;
 public class Main {
 
     static HashMap<String, User> users = new HashMap<>();
-    static User user;
+    static User user;// this static field gets reset each time a new user is created or logged on, reset
 
     public static void main(String[] args) {
 	// write your code here
@@ -19,7 +19,7 @@ public class Main {
                 "/",
                 ((request, response) -> {
                     HashMap m = new HashMap();
-                    if (users.isEmpty()) {
+                    if (user == null) {
                         return new ModelAndView(m, "index.html");
                     }
                     else {
@@ -33,27 +33,39 @@ public class Main {
                 new MustacheTemplateEngine()
         );
         Spark.post(
-                "/user",
+                "/create-user",
                 ((request, response) -> {
                     String name = request.queryParams("createUser");
                     String password = request.queryParams("createPass");
-                    user = new User(name, password);
-                    if (!users.containsValue(user)) {
+                    if (!users.containsKey(name)) {
+                        user = new User(name, password);
                         users.put(user.name, user);
                         response.redirect("/");
                         return "";
                     }
+                    user = users.get(name);
+                    if (users.get(user.name).password.equals(password)){
+                        response.redirect("/");
+                        return "";
+                    }
                     else {
-                        //gonna have another html file redirect here that says 'Error username/pass not correct and a retry button that redirects back to login page;
                         return "";
                     }
                 })
         );
         Spark.post(
-                "/messages",
+                "/create-message",
                 ((request, response) -> {
                     Message message = new Message(user.messages.size() + 1, request.queryParams(("createMessage")));
                     user.messages.add(message);
+                    response.redirect("/");
+                    return "";
+                })
+        );
+        Spark.post(
+                "/logout",
+                ((request, response) -> {
+                    user = null;
                     response.redirect("/");
                     return "";
                 })

@@ -1,6 +1,6 @@
 <html>
 <body>
-    <form action="/messages" method="post">
+    <form action="/create-message" method="post">
         <input type="text" placeholder="Write a message" name="createMessage"/>
         <button type="submit">Submit</button>
     </form>
@@ -8,5 +8,9 @@
     {{#posts}}
 {{index}}. {{message}} <br>
 {{/posts}}
+
+    <form action="/logout" method="post">
+        <button type="submit">Logout</button>
+    </form>
 </body>
 </html>
