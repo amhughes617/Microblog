@@ -33,14 +33,20 @@ public class Main {
                 new MustacheTemplateEngine()
         );
         Spark.post(
-                "/index",
+                "/user",
                 ((request, response) -> {
                     String name = request.queryParams("createUser");
                     String password = request.queryParams("createPass");
                     user = new User(name, password);
-                    users.put(user.name, user);
-                    response.redirect("/");
-                    return "";
+                    if (!users.containsValue(user)) {
+                        users.put(user.name, user);
+                        response.redirect("/");
+                        return "";
+                    }
+                    else {
+                        //gonna have another html file redirect here that says 'Error username/pass not correct and a retry button that redirects back to login page;
+                        return "";
+                    }
                 })
         );
         Spark.post(
