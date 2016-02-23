@@ -1,6 +1,7 @@
 package com.theironyard;
 
 import spark.ModelAndView;
+import spark.Session;
 import spark.Spark;
 import spark.template.mustache.MustacheTemplateEngine;
 
@@ -9,7 +10,7 @@ import java.util.HashMap;
 public class Main {
 
     static HashMap<String, User> users = new HashMap<>();
-    static User user;// this static field gets reset each time a new user is created or logged on, reset
+    // this static field gets reset each time a new user is created or logged on, reset
 
     public static void main(String[] args) {
 	// write your code here
@@ -19,6 +20,11 @@ public class Main {
                 "/",
                 ((request, response) -> {
                     HashMap m = new HashMap();
+
+                    Session session = request.session();
+                    String name = session.attribute("userName");
+                    User user = users.get(name);
+
                     if (user == null) {
                         return new ModelAndView(m, "index.html");
                     }
@@ -37,13 +43,14 @@ public class Main {
                 ((request, response) -> {
                     String name = request.queryParams("createUser");
                     String password = request.queryParams("createPass");
-                    if (!users.containsKey(name)) {
+                    User user = users.get(name);
+                    if (user == null) {
                         user = new User(name, password);
                         users.put(user.name, user);
-                        response.redirect("/");
-                        return "";
                     }
-                    user = users.get(name);
+                    Session session = request.session();
+                    session.attribute("userName", user.name);
+
                     if (users.get(user.name).password.equals(password)){
                         response.redirect("/");
                         return "";
@@ -56,6 +63,9 @@ public class Main {
         Spark.post(
                 "/create-message",
                 ((request, response) -> {
+                    Session session = request.session();
+                    String name = session.attribute("userName");
+                    User user = users.get(name);
                     Message message = new Message(user.messages.size() + 1, request.queryParams(("createMessage")));
                     user.messages.add(message);
                     response.redirect("/");
@@ -65,7 +75,8 @@ public class Main {
         Spark.post(
                 "/logout",
                 ((request, response) -> {
-                    user = null;
+                    Session session = request.session();
+                    session.invalidate();
                     response.redirect("/");
                     return "";
                 })
