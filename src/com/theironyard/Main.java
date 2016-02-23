@@ -19,21 +19,14 @@ public class Main {
         Spark.get(
                 "/",
                 ((request, response) -> {
-                    HashMap m = new HashMap();
 
-                    Session session = request.session();
-                    String name = session.attribute("userName");
-                    User user = users.get(name);
+                    User user = getUserFromSession(request.session());
 
                     if (user == null) {
-                        return new ModelAndView(m, "index.html");
+                        return new ModelAndView(null, "index.html");
                     }
                     else {
-                        m.put("name", users.get(user.name).name);
-                        if (!users.get(user.name).messages.isEmpty()) {
-                            m.put("posts", users.get(user.name).messages);
-                        }
-                        return new ModelAndView(m, "messages.html");
+                        return new ModelAndView(user, "messages.html");
                     }
                 }),
                 new MustacheTemplateEngine()
@@ -46,16 +39,17 @@ public class Main {
                     User user = users.get(name);
                     if (user == null) {
                         user = new User(name, password);
-                        users.put(user.name, user);
+                        users.put(name, user);
                     }
                     Session session = request.session();
-                    session.attribute("userName", user.name);
+                    session.attribute("userName", name);
 
-                    if (users.get(user.name).password.equals(password)){
+                    if (users.get(name).password.equals(password)){
                         response.redirect("/");
                         return "";
                     }
                     else {
+                        Spark.halt("403");
                         return "";
                     }
                 })
@@ -63,10 +57,8 @@ public class Main {
         Spark.post(
                 "/create-message",
                 ((request, response) -> {
-                    Session session = request.session();
-                    String name = session.attribute("userName");
-                    User user = users.get(name);
-                    Message message = new Message(user.messages.size() + 1, request.queryParams(("createMessage")));
+                    User user = getUserFromSession(request.session());
+                    Message message = new Message(request.queryParams(("createMessage")));
                     user.messages.add(message);
                     response.redirect("/");
                     return "";
@@ -81,5 +73,35 @@ public class Main {
                     return "";
                 })
         );
+        Spark.post(
+                "/edit",
+                ((request, response) -> {
+                    User user = getUserFromSession(request.session());
+                    int index = Integer.valueOf(request.queryParams("messageIndex"));
+                    user.messages.get(index).message = request.queryParams("editMessage");
+                    response.redirect("/");
+                    return "";
+                })
+        );
+        Spark.post(
+                "/delete",
+                ((request, response) -> {
+                    User user = getUserFromSession(request.session());
+                    String input = request.queryParams("deleteMessage");
+                    if (!input.isEmpty()) {
+                        int index = Integer.valueOf(input);
+                        user.messages.remove(index - 1);
+                    }
+                    else {
+                        user.messages.remove(0);
+                    }
+                    response.redirect("/");
+                    return "";
+                })
+        );
+    }
+    static User getUserFromSession(Session session) {
+        String name = session.attribute("userName");
+        return users.get(name);
     }
 }
